@@ -9,6 +9,11 @@
 #include <stdio.h>
 #define NC "\e[0m"
 /*COSAS QUE FALTAN
+
+-Jaque Mate
+-Tablas por repeticion
+-Graficos
+-Motor de ajedrez
 -*/
 using namespace std;
 
@@ -27,7 +32,8 @@ int cambiarNumero(char &numero) { return 7 - (numero - 49); }
 
 void coronar(int &xAct, int &yAct, int &x, int &y, Pieza *tablero[][8]) {
   int opPeon;
-  if (tablero[yAct][xAct]->getColor() == "Blancas" && y==0) {
+
+  if (tablero[y][x]->getColor() == "Blancas" && y==0) {
     cout << "Elija una pieza:" << endl;
     cout << "\t1. Reina" << endl;
     cout << "\t2. Torre" << endl;
@@ -37,35 +43,31 @@ void coronar(int &xAct, int &yAct, int &x, int &y, Pieza *tablero[][8]) {
     do {
       switch (opPeon) {
       case 1:
-        delete tablero[yAct][xAct];
-        tablero[yAct][xAct] = NULL;
+        delete tablero[y][x];
         tablero[y][x] = new Reina("Reina", 0, "Blancas", x, y);
         break;
 
       case 2:
-        delete tablero[yAct][xAct];
-        tablero[yAct][xAct] = NULL;
+        delete tablero[y][x];
         tablero[y][x] = new Torre("Torre", 0, "Blancas", x, y);
         break;
 
       case 3:
-        delete tablero[yAct][xAct];
-        tablero[yAct][xAct] = NULL;
+        delete tablero[y][x];
         tablero[y][x] = new Alfil("Alfil", 0, "Blancas", x, y);
         break;
 
       case 4:
-        delete tablero[yAct][xAct];
-        tablero[yAct][xAct] = NULL;
+        delete tablero[y][x];
         tablero[y][x] = new Caballo("Caballo", 0, "Blancas", x, y);
         break;
 
       default:
         break;
       }
-    } while (opPeon != 1 || opPeon != 2 || opPeon != 3 || opPeon != 4);
+    } while (opPeon != 1 && opPeon != 2 && opPeon != 3 && opPeon != 4);
   } 
-  else if (tablero[yAct][xAct]->getColor() == "Negras" && y==7) {
+  else if (tablero[y][x]->getColor() == "Negras" && y==7) {
     cout << "Elija una pieza:" << endl;
     cout << "\t1. Reina" << endl;
     cout << "\t2. Torre" << endl;
@@ -75,33 +77,29 @@ void coronar(int &xAct, int &yAct, int &x, int &y, Pieza *tablero[][8]) {
     do {
       switch (opPeon) {
       case 1:
-        delete tablero[yAct][xAct];
-        tablero[yAct][xAct] = NULL;
+        delete tablero[y][x];
         tablero[y][x] = new Reina("Reina", 0, "Negras", x, y);
         break;
 
       case 2:
-        delete tablero[yAct][xAct];
-        tablero[yAct][xAct] = NULL;
+        delete tablero[y][x];
         tablero[y][x] = new Torre("Torre", 0, "Negras", x, y);
         break;
 
       case 3:
-        delete tablero[yAct][xAct];
-        tablero[yAct][xAct] = NULL;
+        delete tablero[y][x];
         tablero[y][x] = new Alfil("Alfil", 0, "Negras", x, y);
         break;
 
       case 4:
-        delete tablero[yAct][xAct];
-        tablero[yAct][xAct] = NULL;
+        delete tablero[y][x];
         tablero[y][x] = new Caballo("Caballo", 0, "Negras", x, y);
         break;
 
       default:
         break;
       }
-    } while (opPeon != 1 || opPeon != 2 || opPeon != 3 || opPeon != 4);
+    } while (opPeon != 1 && opPeon != 2 && opPeon != 3 && opPeon != 4);
   }
 }
 
@@ -109,11 +107,11 @@ void comidaPaso(int &xAct, int &yAct, int &x, int &y, Pieza *tablero[][8]) {
   tablero[y][x] = tablero[yAct][xAct];
   tablero[yAct][xAct] = NULL;
   if (tablero[y][x]->getColor() == "Blancas") {
-    delete tablero[y +1][x];
-    tablero[yAct + 1][xAct] = NULL;
+    delete tablero[y + 1][x];
+    tablero[y + 1][x] = NULL;
   } else {
-    delete tablero[yAct - 1][xAct];
-    tablero[yAct - 1][xAct] = NULL;
+    delete tablero[y - 1][x];
+    tablero[y - 1][x] = NULL;
   }
 }
 
@@ -121,17 +119,31 @@ bool comidaPrueba(int &xAct, int &yAct, int &x, int &y, string pRey, Pieza *tabl
   tableroCopia[y][x] = tableroCopia[yAct][xAct];
   tableroCopia[yAct][xAct] = NULL;
   if (tableroCopia[y][x]->getColor() == "Blancas") {
-    delete tableroCopia[y +1][x];
-    tableroCopia[yAct + 1][xAct] = NULL;
+    delete tableroCopia[y + 1][x];
+    tableroCopia[y + 1][x] = NULL;
   } else {
-    delete tableroCopia[yAct - 1][xAct];
-    tableroCopia[yAct - 1][xAct] = NULL;
+    delete tableroCopia[y - 1][x];
+    tableroCopia[y - 1][x] = NULL;
   }
 
-  if (Rey *ptrRey = dynamic_cast<Rey *>(tableroCopia[cambiarLetra(pRey[0])][cambiarNumero(pRey[1])])) {
-    return ptrRey->esta_En_Jaque(xAct, yAct, tableroCopia);
-  } 
-  return 0; 
+  for (int i = 0; i < 8; i++) {
+      for (int j = 0; j < 8; j++) {
+        if (tableroCopia[i][j] == NULL) {
+          cout << NC "[ ]";
+
+        } else {
+          cout << NC "[" << tableroCopia[i][j]->imprime() << NC "]";
+        }
+
+        if (j == 7) {
+          cout << " " << 8 - i << endl;
+        }
+      }
+    } 
+  
+  if (Rey* ptrRey = dynamic_cast<Rey *>(tableroCopia[cambiarNumero(pRey[1])][cambiarLetra(pRey[0])])) { 
+    return ptrRey->esta_En_Jaque(cambiarLetra(pRey[0]), cambiarNumero(pRey[1]), tableroCopia);
+  }
 }
 
 void enroqueCorto(int &xAct, int &yAct, Pieza *tablero[][8]) {
@@ -159,18 +171,16 @@ void cambioPosicion(int &xAct, int &yAct, int &x, int &y, Pieza *tablero[][8]) {
   tablero[yAct][xAct] = NULL;
 }
 
-bool cambioPrueba(int &xAct, int &yAct, int &x, int &y, string pRey,
-                  Pieza *tableroCopia[][8]) {
+bool cambioPrueba(int &xAct, int &yAct, int &x, int &y, string pRey, Pieza *tableroCopia[][8]) {
   delete tableroCopia[y][x];
   tableroCopia[y][x] = NULL;
   tableroCopia[y][x] = tableroCopia[yAct][xAct];
   tableroCopia[yAct][xAct] = NULL;
   // Rey en jaque = true & Rey no en jaque = false;
-  if (Rey *ptrRey = dynamic_cast<Rey *>(
-          tableroCopia[cambiarLetra(pRey[0])][cambiarNumero(pRey[1])])) {
-    return ptrRey->esta_En_Jaque(xAct, yAct, tableroCopia);
+  if (Rey* ptrRey = dynamic_cast<Rey *>(tableroCopia[cambiarNumero(pRey[1])][cambiarLetra(pRey[0])])) { 
+    return ptrRey->esta_En_Jaque(cambiarLetra(pRey[0]), cambiarNumero(pRey[1]), tableroCopia);
   }
-  return 0; 
+  //return 0; 
 }
 
 int main() {
@@ -179,6 +189,12 @@ int main() {
   for (int i = 0; i < 8; i++) {
     for (int j = 0; j < 8; j++) {
       tablero[i][j] = NULL;
+    }
+  }
+
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+      tableroCopia[i][j] = NULL;
     }
   }
   //-------------------------BLANCAS------------------------
@@ -197,7 +213,7 @@ int main() {
   tablero[6][4] = new Peon("Peon", 0, "Blancas", 4, 6, false);
   tablero[6][5] = new Peon("Peon", 0, "Blancas", 5, 6, false);
   tablero[6][6] = new Peon("Peon", 0, "Blancas", 6, 6, false);
-  tablero[6][7] = new Peon("Peon", 0, "Blancas", 7, 6, false);
+  tablero[6][7] = new Peon("Peon", 0, "Blancas", 6, 1, false);
 
   //-------------------------NEGRAS------------------------
   tablero[0][4] = new Rey("Rey", 0, "Negras", 4, 0);
@@ -222,9 +238,21 @@ int main() {
   cout << "----------------------------" << endl;
   cout << "Comencemos..." << endl;
 
-  int opcion, opRey, xAct, yAct, x, y;
-  string acepta, turno = "Blancas", pieza, posicion, ReyBlanco = "",
-                 ReyNegro = "", desetPeon="";
+  bool camPrueba,
+       vcp;
+  int opcion, 
+      opRey, 
+      xAct, 
+      yAct, 
+      x, 
+      y;
+  string acepta, 
+         turno = "Blancas", 
+         pieza, 
+         posicion, 
+         ReyBlanco ="e1",
+         ReyNegro = "e8", 
+         desetPeon="";
   Pieza *valPieza;
 
   do {
@@ -246,37 +274,36 @@ int main() {
     //actualizar tablero copia
     for (int i = 0; i < 8; i++) {
       for (int j = 0; j < 8; j++) {
-        delete tableroCopia[i][j];
-        tableroCopia[i][j] == NULL;
-        if (tablero[i][j]->getEtiqueta() == "Torre") {
-          tableroCopia[i][j] ==
-              new Torre(tablero[i][j]->getEtiqueta(),
-                        tablero[i][j]->getContador(), tablero[i][j]->getColor(),
-                        tablero[i][j]->getX(), tablero[i][j]->getY());
-        } else if (tablero[i][j]->getEtiqueta() == "Alfil") {
-          tableroCopia[i][j] ==
-              new Alfil(tablero[i][j]->getEtiqueta(),
-                        tablero[i][j]->getContador(), tablero[i][j]->getColor(),
-                        tablero[i][j]->getX(), tablero[i][j]->getY());
-        } else if (tablero[i][j]->getEtiqueta() == "Reina") {
-          tableroCopia[i][j] ==
-              new Reina(tablero[i][j]->getEtiqueta(),
-                        tablero[i][j]->getContador(), tablero[i][j]->getColor(),
-                        tablero[i][j]->getX(), tablero[i][j]->getY());
-        } else if (tablero[i][j]->getEtiqueta() == "Rey") {
-          tableroCopia[i][j] ==
-              new Rey(tablero[i][j]->getEtiqueta(),
-                      tablero[i][j]->getContador(), tablero[i][j]->getColor(),
-                      tablero[i][j]->getX(), tablero[i][j]->getY());
-        } else if (tablero[i][j]->getEtiqueta() == "Caballo") {
-          tableroCopia[i][j] == new Caballo(tablero[i][j]->getEtiqueta(),
-                                            tablero[i][j]->getContador(),
-                                            tablero[i][j]->getColor(),
-                                            tablero[i][j]->getX(),
-                                            tablero[i][j]->getY());
-        } else if (Peon *ptrPeon =dynamic_cast<Peon *>(tableroCopia[i][j])) {
-          tableroCopia[i][j] == new Peon(ptrPeon->getEtiqueta(),ptrPeon->getContador(), ptrPeon->getColor(), ptrPeon->getX(), ptrPeon->getY(), ptrPeon->getAvanceDoble());
-        }
+        tableroCopia[i][j] = NULL;
+      }
+    }
+    for (int i = 0; i < 8; i++) {
+      for (int j = 0; j < 8; j++) {
+        if(!tablero[i][j]){
+          delete tableroCopia[i][j];
+          tableroCopia[i][j]=NULL;
+        } else{
+            delete tableroCopia[i][j];
+            tableroCopia[i][j] = NULL;
+            if (tablero[i][j]->getEtiqueta() == "Torre") {
+                tableroCopia[i][j] = new Torre(tablero[i][j]->getEtiqueta(),tablero[i][j]->getContador(), tablero[i][j]->getColor(), tablero[i][j]->getX(), tablero[i][j]->getY());
+            } 
+            else if (tablero[i][j]->getEtiqueta() == "Alfil") {
+                tableroCopia[i][j] = new Alfil(tablero[i][j]->getEtiqueta(), tablero[i][j]->getContador(), tablero[i][j]->getColor(), tablero[i][j]->getX(), tablero[i][j]->getY());
+            } 
+            else if (tablero[i][j]->getEtiqueta() == "Reina") {
+                tableroCopia[i][j] = new Reina(tablero[i][j]->getEtiqueta(), tablero[i][j]->getContador(), tablero[i][j]->getColor(), tablero[i][j]->getX(), tablero[i][j]->getY());
+            } 
+            else if (tablero[i][j]->getEtiqueta() == "Rey") {
+                tableroCopia[i][j] = new Rey(tablero[i][j]->getEtiqueta(), tablero[i][j]->getContador(), tablero[i][j]->getColor(), tablero[i][j]->getX(), tablero[i][j]->getY());
+            } 
+            else if (tablero[i][j]->getEtiqueta() == "Caballo") {
+                tableroCopia[i][j] = new Caballo(tablero[i][j]->getEtiqueta(), tablero[i][j]->getContador(), tablero[i][j]->getColor(), tablero[i][j]->getX(), tablero[i][j]->getY());
+            } 
+            else if (Peon *ptrPeon =dynamic_cast<Peon *>(tablero[i][j])) {
+                tableroCopia[i][j] = new Peon(ptrPeon->getEtiqueta(),ptrPeon->getContador(), ptrPeon->getColor(), ptrPeon->getX(), ptrPeon->getY(), ptrPeon->getAvanceDoble());
+            }
+        }  
       }
     }
     cout << NC " a  b  c  d  e  f  g  h" << endl;
@@ -330,10 +357,6 @@ int main() {
           } else if (tablero[yAct][xAct]->getColor() != turno) {
             throw "No corresponde a su color";
           }
-
-          // Luego lo cambiamos a que busque la pieza en la posicion xy
-          cout << "Se puede buscar la pieza "
-               << tablero[yAct][xAct]->getEtiqueta() << endl;
           valPieza = tablero[yAct][xAct];
           if (Rey *ptrRey =dynamic_cast<Rey *>(tablero[yAct][xAct])) {
             while (true) {
@@ -342,8 +365,7 @@ int main() {
               cout << "\t3. Mover" << endl;
               cin >> opRey;
                 if (opRey == 1 || opRey == 2) {
-                  if (opRey ==
-                      1 && ptrRey->validarEnroque("Largo", tablero)) {
+                  if (opRey == 1 && ptrRey->validarEnroque("Largo", tablero)) {
                     // funcion que hace el cambio a enroque largo
                     enroqueLargo(xAct, yAct, tablero);
                     break;
@@ -380,7 +402,6 @@ int main() {
 
       cout << "A donde la quieres mover: ";
       cin >> posicion;
-      while (true) {
         x = cambiarLetra(posicion[0]);
         y = cambiarNumero(posicion[1]);
         try {
@@ -388,75 +409,92 @@ int main() {
             throw "Posicion no valida";
           } else if (y < 0 || y > 7 || posicion.length() != 2) {
             throw "Posicion no valida";
-          } else if (Peon *ptrPeon =
-                         dynamic_cast<Peon *>(tableroCopia[yAct][xAct])) {
-            if (!ptrPeon->validarComidaPaso(xAct,yAct,tablero)) {
+          } else if(Peon *ptrPeon = dynamic_cast<Peon *>(tablero[yAct][xAct])){
+              vcp=ptrPeon->validarComidaPaso(x,y,tablero);
+              if (!vcp && !ptrPeon->validarMovimiento(x, y, tablero)) {
               throw "Movimiento no valido";
-            } else if (!ptrPeon->validarMovimiento(x, y, tablero)) {
-              throw "Movimiento no valido";
-            }
-          } else if (!valPieza->validarMovimiento(x, y, tablero)) {
+            } 
+          }else if(!valPieza->validarMovimiento(x, y, tablero) && valPieza->getEtiqueta()!="Peon"){
             throw "Movimiento no valido";
           }
-          if (Peon *ptrPeon =dynamic_cast<Peon *>(tableroCopia[yAct][xAct])){
-            if ( ptrPeon->validarComidaPaso(x,y, tablero) && turno=="Blancas"){
-              if(comidaPrueba(xAct, yAct, x, y, ReyBlanco, tableroCopia)){
-                cout<<"Tu rey esta en jaque... Intente de nuevo"<<endl;
-                continue;
+          if (Peon *ptrPeon =dynamic_cast<Peon *>(tablero[yAct][xAct])){
+
+            if (vcp && turno=="Blancas"){
+              camPrueba=comidaPrueba(xAct, yAct, x, y, ReyBlanco, tableroCopia);
+              cout<<camPrueba<<endl;
+              if(camPrueba){
+                //break;
+              }
+              else{
+                comidaPaso(xAct, yAct, x, y, tablero);
+                //break;
               }
             }
-            else if (ptrPeon->validarComidaPaso(x,y, tablero) && turno=="Negras"){
-                if(comidaPrueba(xAct,yAct,x,y, ReyNegro, tableroCopia)){
-                  cout<<"Tu rey esta en jaque... Intente de nuevo"<<endl;
-                  continue;
-                }
+            else if (vcp && turno=="Negras"){
+              camPrueba=comidaPrueba(xAct, yAct, x, y, ReyNegro, tableroCopia);
+              cout<<camPrueba<<endl;
+              if(camPrueba){
+                //break;
+              }
+              else{
+                comidaPaso(xAct, yAct, x, y, tablero);
+                //break;
+              } 
             }
-          }
-          
-          else{
+          }else{
             if(turno=="Blancas"){
-                if(cambioPrueba(xAct, yAct, x, y, ReyBlanco, tableroCopia)){
-                    cout<<"Tu rey esta en jaque... Intente de nuevo"<<endl;
-                    continue;
+                camPrueba=cambioPrueba(xAct, yAct, x, y, ReyBlanco, tableroCopia);
+                if(camPrueba){
+                 // break;
                 }
             }else{
-                if(cambioPrueba(xAct, yAct, x, y, ReyNegro, tableroCopia)){
-                    cout<<"Tu rey esta en jaque... Intente de nuevo"<<endl;
-                    continue;
+                camPrueba=cambioPrueba(xAct, yAct, x, y, ReyNegro, tableroCopia);
+                if(camPrueba){
+                 // break;
                 }
             }
           }
 
-          if (valPieza->getEtiqueta()=="Rey" && valPieza->getColor()=="Blanco"){
+          if (valPieza->getEtiqueta()=="Rey" && valPieza->getColor()=="Blancas"){
+            cout<<"camboReyB"<<endl;
             ReyBlanco=posicion;
           }
-          else if (valPieza->getEtiqueta()=="Rey" && valPieza->getColor()=="Negro"){ 
+          else if (valPieza->getEtiqueta()=="Rey" && valPieza->getColor()=="Negras"){ 
             ReyNegro=posicion;
           }
-          cout << "Se puede hacer el cambio" << endl;
+          
           cambioPosicion(xAct, yAct, x, y, tablero);
           
           if(desetPeon!=""){
-            if (Peon* ptrPeon =dynamic_cast<Peon *>( tablero[cambiarLetra(desetPeon[0])][cambiarNumero(desetPeon[1])])){
+            if (Peon* ptrPeon =dynamic_cast<Peon *>( tablero[cambiarNumero(desetPeon[1])][cambiarLetra(desetPeon[0])])){
               ptrPeon->setAvanceNormal();
             }
             }
             desetPeon="";
-          if (Peon* ptrPeon =dynamic_cast<Peon *>( tablero[x][y])){
+          if (Peon* ptrPeon =dynamic_cast<Peon *>( tablero[y][x])){
             if (ptrPeon->getAvanceDoble()){
               desetPeon=posicion;
               }
             }
-          break;
-          
+          if(valPieza->getEtiqueta()=="Peon" && y==0 || y==7){
+            coronar(xAct, yAct, x, y, tablero);
+          }
+
+        //  break;
         } catch (const char *msg) {
           cerr << msg << endl;
-          cout << "Ingresa otra posicion: ";
-          cin >> posicion;
+          //cout << "Ingresa otra posicion: ";
+          //cin >> posicion;
+          continue;
         }
+      
+      if(camPrueba){
+        cout<<"Tu rey esta en jaque... Intente de nuevo"<<endl;
+        tablero[yAct][xAct]->setX(xAct);
+        tablero[yAct][xAct]->setY(yAct);
+        continue;
       }
       break;
-      
 
     default:
       cout << "Intente de nuevo..." << endl;
